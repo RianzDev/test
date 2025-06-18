@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quer sair comigo?</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #ffebee;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            touch-action: manipulation;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        h1 {
+            color: #d32f2f;
+            margin-bottom: 30px;
+            font-size: 24px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+        }
+        
+        .buttons-container {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            margin-top: 20px;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        
+        button {
+            padding: 15px 35px;
+            font-size: 18px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            font-weight: bold;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        #sim {
+            background-color: #4caf50;
+            color: white;
+            z-index: 1;
+        }
+        
+        #nao {
+            background-color: #f44336;
+            color: white;
+            position: absolute;
+            z-index: 2;
+        }
+        
+        .hidden {
+            display: none;
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        #resposta {
+            font-size: 28px;
+            color: #d32f2f;
+            margin-top: 30px;
+            font-weight: bold;
+            padding: 0 20px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+            transition: all 0.5s;
+        }
+        
+        .hearts {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        .heart {
+            position: absolute;
+            font-size: 20px;
+            color: #ff4081;
+            animation: float 4s ease-in-out infinite;
+            opacity: 0;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) rotate(20deg);
+                opacity: 0;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 22px;
+            }
+            
+            button {
+                padding: 12px 30px;
+                font-size: 16px;
+            }
+            
+            .buttons-container {
+                height: 150px;
+            }
+            
+            #resposta {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Quer sair comigo?</h1>
+    
+    <div class="buttons-container">
+        <div class="buttons">
+            <button id="sim">Sim 😊</button>
+        </div>
+        <button id="nao">Não 😅</button>
+    </div>
+    
+    <div id="resposta" class="hidden"></div>
+    <div class="hearts" id="hearts"></div>
+    
+    <script>
+        const simBtn = document.getElementById('sim');
+        const naoBtn = document.getElementById('nao');
+        const resposta = document.getElementById('resposta');
+        const container = document.querySelector('.buttons-container');
+        const heartsContainer = document.getElementById('hearts');
+        
+        // Detectar se é mobile
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        // Configurações de movimento
+        let isMoving = false;
+        const moveDuration = 200;
+        const escapeDistance = isMobile ? 120 : 150;
+        
+        // Contador de tentativas
+        let attempts = 0;
+        const maxAttemptsBeforeSuperEscape = 3;
+        
+        // Função para criar corações
+        function createHearts(x, y) {
+            for (let i = 0; i < 5; i++) {
+                const heart = document.createElement('div');
+                heart.className = 'heart';
+                heart.innerHTML = '❤️';
+                heart.style.left = x + 'px';
+                heart.style.top = y + 'px';
+                heart.style.animationDelay = (i * 0.2) + 's';
+                heartsContainer.appendChild(heart);
+                
+                setTimeout(() => {
+                    heart.remove();
+                }, 4000);
+            }
+        }
+        
+        // Função SUPER fuga
+        function superEscape() {
+            document.body.style.backgroundColor = '#fff3e0';
+            naoBtn.style.transform = 'scale(1.1)';
+            naoBtn.style.boxShadow = '0 0 20px rgba(244, 67, 54, 0.7)';
+            
+            const containerRect = container.getBoundingClientRect();
+            const btnRect = naoBtn.getBoundingClientRect();
+            
+            const corners = [
+                { x: 10, y: 10 },
+                { x: containerRect.width - btnRect.width - 10, y: 10 },
+                { x: 10, y: containerRect.height - btnRect.height - 10 },
+                { x: containerRect.width - btnRect.width - 10, y: containerRect.height - btnRect.height - 10 }
+            ];
+            
+            const randomCorner = corners[Math.floor(Math.random() * corners.length)];
+            
+            naoBtn.style.transition = `left 300ms cubic-bezier(0.68, -0.55, 0.27, 1.55), top 300ms cubic-bezier(0.68, -0.55, 0.27, 1.55)`;
+            naoBtn.style.left = randomCorner.x + 'px';
+            naoBtn.style.top = randomCorner.y + 'px';
+            
+            createHearts(
+                randomCorner.x + btnRect.width/2,
+                randomCorner.y + btnRect.height/2
+            );
+            
+            setTimeout(() => {
+                naoBtn.style.transform = '';
+                naoBtn.style.boxShadow = '0 5px 15px rgba(0,0,0,0.2)';
+                document.body.style.backgroundColor = '#ffebee';
+            }, 1000);
+        }
+        
+        // Função para mover o botão "Não"
+        function moveButton(event) {
+            if (isMoving) return;
+            isMoving = true;
+            
+            attempts++;
+            if (attempts % maxAttemptsBeforeSuperEscape === 0) {
+                superEscape();
+                isMoving = false;
+                return;
+            }
+            
+            const containerRect = container.getBoundingClientRect();
+            const btnRect = naoBtn.getBoundingClientRect();
+            
+            const maxX = containerRect.width - btnRect.width;
+            const maxY = containerRect.height - btnRect.height;
+            
+            let newX, newY;
+            let touchX, touchY;
+            
+            // Obter coordenadas do toque/clique
+            if (isMobile && event.touches) {
+                touchX = event.touches[0].clientX - containerRect.left;
+                touchY = event.touches[0].clientY - containerRect.top;
+            } else {
+                touchX = event.clientX - containerRect.left;
+                touchY = event.clientY - containerRect.top;
+            }
+            
+            // Calcular direção oposta
+            const angle = Math.atan2(touchY - btnRect.height/2, touchX - btnRect.width/2);
+            const distance = escapeDistance + (Math.random() * 50);
+            
+            newX = btnRect.left - containerRect.left + Math.cos(angle + Math.PI) * distance;
+            newY = btnRect.top - containerRect.top + Math.sin(angle + Math.PI) * distance;
+            
+            // Garantir limites
+            newX = Math.max(10, Math.min(maxX - 10, newX));
+            newY = Math.max(10, Math.min(maxY - 10, newY));
+            
+            // Aplicar movimento
+            naoBtn.style.transition = `left ${moveDuration}ms cubic-bezier(0.25, 1, 0.5, 1), top ${moveDuration}ms cubic-bezier(0.25, 1, 0.5, 1)`;
+            naoBtn.style.left = newX + 'px';
+            naoBtn.style.top = newY + 'px';
+            
+            naoBtn.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                naoBtn.style.transform = 'scale(1)';
+            }, moveDuration);
+            
+            setTimeout(() => {
+                naoBtn.style.transition = '';
+                isMoving = false;
+            }, moveDuration);
+        }
+        
+        // Eventos para desktop
+        naoBtn.addEventListener('mouseover', moveButton);
+        
+        // Eventos para mobile
+        naoBtn.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            moveButton(e);
+        }, { passive: false });
+        
+        naoBtn.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+        }, { passive: false });
+        
+        // Tentativa de clique
+        naoBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (!isMobile) {
+                moveButton(e);
+            }
+        });
+        
+        // Evento para o botão "Sim"
+        simBtn.addEventListener('click', () => {
+            resposta.textContent = "Sabia que você ia dizer sim! ❤️🎉";
+            resposta.classList.remove('hidden');
+            naoBtn.classList.add('hidden');
+            simBtn.classList.add('hidden');
+            
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    createHearts(
+                        Math.random() * window.innerWidth,
+                        window.innerHeight
+                    );
+                }, i * 100);
+            }
+        });
+        
+        // Posicionar o botão "Não" inicialmente
+        window.addEventListener('load', () => {
+            const containerRect = container.getBoundingClientRect();
+            const btnRect = naoBtn.getBoundingClientRect();
+            
+            naoBtn.style.left = (containerRect.width/2 - btnRect.width/2) + 'px';
+            naoBtn.style.top = (containerRect.height/2 - btnRect.height/2) + 'px';
+        });
+        
+        // Redimensionamento da tela
+        window.addEventListener('resize', () => {
+            if (!isMoving) {
+                const containerRect = container.getBoundingClientRect();
+                const btnRect = naoBtn.getBoundingClientRect();
+                const currentLeft = parseFloat(naoBtn.style.left) || (containerRect.width/2 - btnRect.width/2);
+                const currentTop = parseFloat(naoBtn.style.top) || (containerRect.height/2 - btnRect.height/2);
+                
+                const maxX = containerRect.width - btnRect.width;
+                const maxY = containerRect.height - btnRect.height;
+                
+                naoBtn.style.left = Math.max(0, Math.min(maxX, currentLeft)) + 'px';
+                naoBtn.style.top = Math.max(0, Math.min(maxY, currentTop)) + 'px';
+            }
+        });
+    </script>
+</body>
+</html>
